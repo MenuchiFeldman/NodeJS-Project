@@ -1,15 +1,31 @@
 import { GameModel } from './game.model';
 import { BullPgia } from './game.logic';
+import { PlayerModel } from '../players/player.model';
 
 export default class GameService {
     static async createGame(username: string, password: string) {
+        const player = await PlayerModel.findOne({ username, password });
+        if (!player) {
+            throw new Error('Player not found or password incorrect');
+        }
         const secretCode = this.generateSecretCode();
-        const game = new GameModel({ playerId: username, secretCode, attempts: [], status: 'in-progress', maxAttempts: 10 });
+        const game = new GameModel({
+            playerId: player._id,
+            secretCode,
+            attempts: [],
+            status: 'in-progress',
+            maxAttempts: 10
+        });
         await game.save();
         return game._id;
     }
 
-
+    // static async createGame(username: string, password: string) {
+    //     const secretCode = this.generateSecretCode();
+    //     const game = new GameModel({ playerId: username, secretCode, attempts: [], status: 'in-progress', maxAttempts: 10 });
+    //     await game.save();
+    //     return game._id;
+    // }
     static async submitGuess(gameId: string, guess: number[]) {
         const game = await GameModel.findById(gameId);
         if (!game) {

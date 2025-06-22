@@ -20,4 +20,4 @@ const playerSchema = new Schema<IPlayer>(
     }
 );
 
-export const Player = mongoose.model<IPlayer>('Player', playerSchema);
+export const PlayerModel = mongoose.model<IPlayer>('Player', playerSchema);
