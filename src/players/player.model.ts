@@ -1,23 +1,24 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IPlayer extends Document {
-    username: string;
+    name: string;
     password: string;
-    secretCode: number[];
-    guessHistory: { guess: number[], result: { bulls: number, pgias: number } }[];
+    mail: string;
+    totalGames: number;
+    wins: number;
 }
 
 const playerSchema = new Schema<IPlayer>(
     {
-        username: { type: String, required: true, unique: true },
+        name: { type: String, required: true, unique: true },
         password: { type: String, required: true },
-        secretCode: { type: [Number], required: true },
-        guessHistory: { type: [{ guess: [Number], result: { bulls: Number, pgias: Number } }], default: [] },
+        mail: { type: String, required: true, unique: true },
+        totalGames: { type: Number, default: 0 },
+        wins: { type: Number, default: 0 }
     },
     {
         timestamps: true,
         versionKey: false,
     }
 );
-
-export const Player = mongoose.model<IPlayer>('Player', playerSchema);
+export const PlayerModel = mongoose.model<IPlayer>('Player', playerSchema);

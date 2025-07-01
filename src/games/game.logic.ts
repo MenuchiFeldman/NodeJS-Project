@@ -5,22 +5,20 @@ export class BullPgia {
         const secretCodeCopy: (number | null)[] = [...secretCode]; 
         const guessCopy: (number | null)[] = [...guess];
 
-        // חישוב Bulls
         for (let i = 0; i < guess.length; i++) {
             if (guess[i] === secretCode[i]) {
                 bulls++;
-                secretCodeCopy[i] = null;  // מסמן שנחזה
-                guessCopy[i] = null;       // מסמן שנחזה
+                secretCodeCopy[i] = null;  
+                guessCopy[i] = null;       
             }
         }
 
-        // חישוב Pgias
         for (let i = 0; i < guessCopy.length; i++) {
             if (guessCopy[i] !== null) {
                 const index = secretCodeCopy.indexOf(guessCopy[i]);
                 if (index !== -1) {
                     pgias++;
-                    secretCodeCopy[index] = null;  // מסמן שנחזה
+                    secretCodeCopy[index] = null;  
                 }
             }
         }
