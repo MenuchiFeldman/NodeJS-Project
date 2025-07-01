@@ -1,57 +1,71 @@
-import { Player } from './player.model';
+import  Game  from '../games/game.model';
+import  {PlayerModel} from '../players/player.model';
+import { IPlayer } from '../players/player.model';
 
-export default class PlayerService {
-    /**
-     * 1. הרשמה של שחקן חדש
-     */
-    static async registerPlayer(username: string, password: string) {
-        const secretCode = this.generateSecretCode();
-        const player = new Player({ username, password, secretCode });
-        await player.save();
-        return player.toJSON();
+class PlayerService {
+static async getGuessHistory(playerId: string) {
+    const games = await Game.find({ playerId });
+    if (!games || games.length === 0) {
+        throw new Error('No games found for this player');
     }
-
-    /**
-     * 2. חיפוש היסטוריית ניחושים של שחקן
-     */
-    static async getGuessHistory(playerId: string) {
-        const player = await Player.findById(playerId).lean();
-        return player ? player.guessHistory : null;
+    const player = await PlayerModel.findById(playerId);
+    if (!player) {
+        throw new Error('Player not found');
     }
+    return {
+        wins: player.wins,
+        guesses: games.flatMap(game => game.attempts)
+    };
+}
 
-    /**
-     * 3. שליחת ניחוש
-     */
-    static async submitGuess(playerId: string, guess: number[]) {
-        const player = await Player.findById(playerId);
-        
-        if (!player) {
-            throw new Error('Player not found');
-        }
-    
-        const bulls = player.secretCode.filter((num, index) => num === guess[index]).length;
-        const pgias = guess.filter(num => player.secretCode.includes(num)).length - bulls;
-    
-        player.guessHistory.push({ guess, result: { bulls, pgias } });
-        await player.save();
-        return { bulls, pgias };
-    }
-
-    
-
-    /**
-     * 4. יצירת קוד סודי רנדומלי
-     */
     static generateSecretCode(): number[] {
         const numbers = Array.from({ length: 9 }, (_, i) => i + 1);
-        const secretCode: number[] = []; // הגדרת סוג המערך כ-number[]
-        
+        const secretCode: number[] = []; 
+
         while (secretCode.length < 4) {
             const randomIndex = Math.floor(Math.random() * numbers.length);
             secretCode.push(numbers[randomIndex]);
             numbers.splice(randomIndex, 1);
         }
-        
+
         return secretCode;
     }
+
+ static async registerPlayer(name: string, password: string, mail: string): Promise<IPlayer> {
+    const newPlayer = new PlayerModel({
+        name,
+        password,
+        mail,
+        totalGames: 0,
+        wins: 0
+    });
+    return await newPlayer.save();
 }
+
+static async updatePlayer(id: string, updateData: Partial<IPlayer>): Promise<IPlayer | null> {
+    const updatedPlayer = await PlayerModel.findByIdAndUpdate(
+        id,
+        updateData,
+        { new: true }
+    );
+    if (!updatedPlayer) {
+        throw new Error('Player not found');
+    }
+    return updatedPlayer;
+}
+static async deletePlayer(id: string): Promise<boolean> {
+    const result = await PlayerModel.findByIdAndDelete(id);
+    return !!result;
+}
+    static async findPlayer(playerId:string): Promise<IPlayer | null> {
+        const player = await PlayerModel.findById(playerId);
+        if (!player) {
+            throw new Error('Player not found');
+        }
+        return player;
+
+    }
+
+}
+
+export default PlayerService;
